@@ -1,0 +1,3 @@
+[submodule "wasm-micro-runtime"]
+	path = wasm-micro-runtime
+	url = git@github.com:oss-fun/kan-wamr-migrate.git

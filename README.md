@@ -1,6 +1,10 @@
 # funera1-osc-2023
 
 
+## Direcotry
+src: Wasm application exectuor
+wasi-lifegame: Wasm application
+
 ## How to use
 ### Build runtime
 ```

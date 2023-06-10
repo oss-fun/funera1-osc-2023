@@ -2,8 +2,12 @@
 
 
 ## Direcotry
-src: Wasm application exectuor
-wasi-lifegame: Wasm application
+```bash
+├── src # Wasm application executor
+├── wasi-lifegame # Wasm application
+├── wasm-micro-runtime
+└── scripts
+```
 
 ## How to use
 ### Build runtime

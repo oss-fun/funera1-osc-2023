@@ -1,4 +1,0 @@
-/home/funera1/repo/funera1-osc-2023/cmake_build/CMakeFiles/vmlib.dir
-/home/funera1/repo/funera1-osc-2023/cmake_build/CMakeFiles/basic.dir
-/home/funera1/repo/funera1-osc-2023/cmake_build/CMakeFiles/edit_cache.dir
-/home/funera1/repo/funera1-osc-2023/cmake_build/CMakeFiles/rebuild_cache.dir

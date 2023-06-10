@@ -1,7 +1,7 @@
 use rand::Rng;
 
 fn main() {
-    const N: usize = 30;
+    const N: usize = 100;
     let mut map: [[[bool; N+2 as usize]; N+2]; 2] = [[[false; N+2 as usize]; N+2 as usize]; 2];
 
     let mut rng = rand::thread_rng();

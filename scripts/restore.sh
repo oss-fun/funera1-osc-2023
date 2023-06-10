@@ -1,3 +1,3 @@
 #!/bin/bash
 
-out/basic -r 0
+cmake_build/basic -r 0

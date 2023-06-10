@@ -1,7 +1,7 @@
 # funera1-osc-2023
 
 
-## Direcotry
+## Directory
 ```bash
 ├── src # Wasm application executor
 ├── wasi-lifegame # Wasm application

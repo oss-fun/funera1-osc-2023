@@ -40,7 +40,7 @@ main(int argc, char *argv_main[])
     wasm_module_t module = NULL;
     wasm_module_inst_t module_inst = NULL;
     wasm_exec_env_t exec_env = NULL;
-    uint32 buf_size, stack_size = 64 * 1024, heap_size = 2048 * 1024;
+    uint32 buf_size, stack_size = 2048 * 1024, heap_size = 2048 * 1024;
     wasm_function_inst_t func = NULL;
     wasm_function_inst_t func2 = NULL;
     char *native_buffer = NULL;

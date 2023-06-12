@@ -1,3 +1,11 @@
+num=$(ls wasm-micro-runtime | wc -l)
+if [ $num == 0 ]
+then
+    git submodule update --init --recursive
+    echo "Cloned wasm-micro-runtime!"
+fi
+
+
 CURR_DIR=$(pwd)
 echo "#####################build basic project"
 cd ${CURR_DIR}

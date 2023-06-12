@@ -1,3 +1,4 @@
 #!/bin/bash
 
-cmake_build/basic -r 0
+wasm_executor=$1
+$wasm_executor -r 0

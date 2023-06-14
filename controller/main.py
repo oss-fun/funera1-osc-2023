@@ -1,6 +1,11 @@
 import signal
+import time
 import asyncio
-from fastapi import FastAPI
+import os
+import zipfile
+import base64
+from fastapi import FastAPI, File, UploadFile, Form
+from fastapi.responses import FileResponse
 
 app = FastAPI()
 
@@ -63,6 +68,63 @@ def stop():
 
     running_proc.send_signal(signal.SIGINT)
     running_proc = None
+    time.sleep(1)
     
+    # if not os.path.exists("imgs"):
+    #     os.mkdir("imgs")
+    # os.replace("interp.img", "imgs/interp.img")
+    # os.replace("dump.img", "imgs/dump.img")
+    # os.replace("frame.img", "imgs/frame.img")
+    # os.replace("pool_info.img", "imgs/pool_info.img")
+    # shutil.make_archive('imgs', format='zip', root_dir="imgs")
+    if not (os.path.exists("interp.img") and os.path.exists("dump.img") and os.path.exists("frame.img") and os.path.exists("pool_info.img")):
+        return "Not Found img file"
+
+    with zipfile.ZipFile('imgs.zip', 'w', zipfile.ZIP_DEFLATED) as zf:
+        zf.write("interp.img")
+        zf.write("dump.img")
+        zf.write("frame.img")
+        zf.write("pool_info.img")
+
+    os.remove("interp.img")
+    os.remove("dump.img")
+    os.remove("frame.img")
+    os.remove("pool_info.img")
+
     return "Success"
 
+@app.get("/img")
+async def send_imgs():
+    if not os.path.exists("imgs.zip"):
+        return "imgs.zip is not found"
+    # response = FileResponse(path = "./imgs.zip")
+    with open("imgs.zip", "rb") as f:
+        response = f.read()
+    b = str(base64.b64encode(response))
+    return b[2:-1]
+
+@app.post("/img")
+async def get_imgs(enc: str = Form()):
+    if os.path.exists("imgs.zip"):
+        os.replace("imgs.zip", "old-imgs.zip")
+
+    try:
+        b = base64.b64decode(enc, validate=True)
+    except:
+        return "input string can't decode."
+
+    f = open("imgs.zip", 'wb')
+    f.write(b)
+    f.close()
+
+    with zipfile.ZipFile('imgs.zip') as zf:
+        if zf.namelist() != ["interp.img", "dump.img", "frame.img", "pool_info.img"]:
+            return "imgs.zip is not expected"
+        
+        zf.extractall()
+
+    return "Success"
+
+    
+
+    

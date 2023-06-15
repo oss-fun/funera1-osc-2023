@@ -6,7 +6,7 @@ import zipfile
 import base64
 import requests
 from fastapi import FastAPI, File, UploadFile, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 app = FastAPI()
 
@@ -19,6 +19,10 @@ running_proc = None
 def read_root():
     return {"Hello": "World"}
 
+@app.post("/app/init")
+def init():
+    global running_proc
+    running_proc = None
 
 @app.post("/app/start")
 async def run():
@@ -90,14 +94,17 @@ def stop():
 @app.post("/app/migrate")
 async def migrate(host: str, port: int):
     if not os.path.exists("imgs.zip"):
-        return "imgs.zip is not found"
+        return JSONResponse(status_code=400, content={"msg": "imgs.zip is not found"})
     # response = FileResponse(path = "./imgs.zip")
     with open("imgs.zip", "rb") as f:
         response = f.read()
     b = str(base64.b64encode(response))[2:-1]
 
     response = requests.post('http://' + host + ":" + str(port) + '/img', data={'enc': b})
-    return response
+    if response.status_code == 200:
+        return JSONResponse(status_code=200, content={"msg": "Success"})
+    else:
+        return JSONResponse(status_code=400, content={"msg": "Failed to migration"})
 
 @app.post("/img")
 async def get_imgs(enc: str = Form()):
@@ -107,7 +114,7 @@ async def get_imgs(enc: str = Form()):
     try:
         b = base64.b64decode(enc, validate=True)
     except:
-        return "input string can't decode."
+        return JSONResponse(status_code=400, content={"msg": "input string can't decode."})
 
     f = open("imgs.zip", 'wb')
     f.write(b)
@@ -115,8 +122,8 @@ async def get_imgs(enc: str = Form()):
 
     with zipfile.ZipFile('imgs.zip') as zf:
         if zf.namelist() != ["interp.img", "dump.img", "frame.img", "pool_info.img"]:
-            return "imgs.zip is not expected"
+            return JSONResponse(status_code=400, content={"msg": "imgs.zip is not expected"})
         
         zf.extractall()
 
-    return "Success"
+    return JSONResponse(status_code=200, content={"msg": "Success"})

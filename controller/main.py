@@ -88,7 +88,7 @@ def stop():
     return "Success"
 
 @app.post("/app/migrate")
-async def migrate(host):
+async def migrate(host: str, port: int):
     if not os.path.exists("imgs.zip"):
         return "imgs.zip is not found"
     # response = FileResponse(path = "./imgs.zip")
@@ -96,7 +96,7 @@ async def migrate(host):
         response = f.read()
     b = str(base64.b64encode(response))[2:-1]
 
-    response = requests.post('http://' + host + '/img', data={'enc': b})
+    response = requests.post('http://' + host + ":" + str(port) + '/img', data={'enc': b})
     return response
 
 @app.post("/img")

@@ -6,7 +6,7 @@ import zipfile
 import base64
 import requests
 from fastapi import FastAPI, File, UploadFile, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 app = FastAPI()
 
@@ -90,24 +90,28 @@ def stop():
 @app.post("/app/migrate")
 async def migrate(host: str = Form()):
     if not os.path.exists("imgs.zip"):
-        return "imgs.zip is not found"
-    # response = FileResponse(path = "./imgs.zip")
+        # TODO: エラーコード返す
+        return JSONResponse(status_code=400, content={"message": "imgs.zip is not found"})
+
     with open("imgs.zip", "rb") as f:
         response = f.read()
     b = str(base64.b64encode(response))[2:-1]
 
     response = requests.post('http://' + host + '/img', data={'enc': b})
-    return response
+    if response.status_code == 200:
+        return JSONResponse(status_code=200, content={"message": "Success"})
+    else:
+        return JSONResponse(status_code=400, content={"message": "Fail"})
 
 @app.post("/img")
-async def get_imgs(enc: str = Form()):
+def get_imgs(enc: str = Form()):
     if os.path.exists("imgs.zip"):
         os.replace("imgs.zip", "old-imgs.zip")
 
     try:
         b = base64.b64decode(enc, validate=True)
     except:
-        return "input string can't decode."
+        return JSONResponse(status_code=400, content={"message": "input string can't decode."})
 
     f = open("imgs.zip", 'wb')
     f.write(b)
@@ -115,12 +119,9 @@ async def get_imgs(enc: str = Form()):
 
     with zipfile.ZipFile('imgs.zip') as zf:
         if zf.namelist() != ["interp.img", "dump.img", "frame.img", "pool_info.img"]:
-            return "imgs.zip is not expected"
+            return JSONResponse(status_code=400, content={"message": "imgs.zip is not expected"})
         
+        # TODO: 失敗したときのチェックする
         zf.extractall()
 
-    return "Success"
-
-    
-
-    
+    return JSONResponse(status_code=200, content={"message": "Success"})

@@ -4,6 +4,7 @@ import asyncio
 import os
 import zipfile
 import base64
+import requests
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import FileResponse
 
@@ -70,13 +71,6 @@ def stop():
     running_proc = None
     time.sleep(1)
     
-    # if not os.path.exists("imgs"):
-    #     os.mkdir("imgs")
-    # os.replace("interp.img", "imgs/interp.img")
-    # os.replace("dump.img", "imgs/dump.img")
-    # os.replace("frame.img", "imgs/frame.img")
-    # os.replace("pool_info.img", "imgs/pool_info.img")
-    # shutil.make_archive('imgs', format='zip', root_dir="imgs")
     if not (os.path.exists("interp.img") and os.path.exists("dump.img") and os.path.exists("frame.img") and os.path.exists("pool_info.img")):
         return "Not Found img file"
 
@@ -93,15 +87,17 @@ def stop():
 
     return "Success"
 
-@app.get("/img")
-async def send_imgs():
+@app.post("/app/migrate")
+async def migrate(host: str = Form()):
     if not os.path.exists("imgs.zip"):
         return "imgs.zip is not found"
     # response = FileResponse(path = "./imgs.zip")
     with open("imgs.zip", "rb") as f:
         response = f.read()
-    b = str(base64.b64encode(response))
-    return b[2:-1]
+    b = str(base64.b64encode(response))[2:-1]
+
+    response = requests.post('http://' + host + '/img', data={'enc': b})
+    return response
 
 @app.post("/img")
 async def get_imgs(enc: str = Form()):

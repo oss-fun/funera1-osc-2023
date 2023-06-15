@@ -3,34 +3,54 @@
 #include <WiFi.h>
 #include "time.h"
 #include "esp_log.h"
+#include <string.h>
 
+typedef struct {
+  char* host;
+  int port;
+} host_info_t;
+
+// 家
 #if 1
 const char* ssid = "";
 const char* password = "";
-const char* host_popos = "";
-// const char* host_raspi = "";
+const host_info_t host_popos = {
+  "",
+  8000
+};
+const host_info_t host_popos2 = {
+  "",
+  8001
+};
+// const char* host_raspi = "192.168.10.108";
 #endif
 
+// 学校
 #if 0
 const char* ssid = "";
 const char* password = "";
-const char* host_popos = "";
-const char* host_raspi = "";
+const host_info_t host_popos = {
+  "",
+  8000
+};
+const host_info_t host_raspi = {
+  "",
+  8000
+};
 #endif
 
 const int BUFFER_MAX_SIZE = 2048;
 static const char *TAG = "HTTP_CLIENT";
 
-
 static void test_api(const char*);
 
-static void start_app(const char* hostname) {
+static void start_app(const host_info_t* host_info) {
   const int MAX_SIZE = 2048;
   char local_response_buffer[BUFFER_MAX_SIZE] = {0};
 
   esp_http_client_config_t config = {
-    .host = hostname,
-    .port = 8000,
+    .host = host_info->host,
+    .port = host_info->port,
     .path = "/app/start",
     .method = HTTP_METHOD_POST,
     .user_data = local_response_buffer,
@@ -51,12 +71,12 @@ static void start_app(const char* hostname) {
   }
 }
 
-static void stop_app(const char* hostname) {
+static void stop_app(const host_info_t* host_info) {
   char local_response_buffer[BUFFER_MAX_SIZE] = {0};
 
   esp_http_client_config_t config = {
-    .host = hostname,
-    .port = 8000,
+    .host = host_info->host,
+    .port = host_info->port,
     .path = "/app/stop",
     .method = HTTP_METHOD_POST,
     .user_data = local_response_buffer,
@@ -76,12 +96,12 @@ static void stop_app(const char* hostname) {
   }
 }
 
-static void restore_app(const char* hostname) {
+static void restore_app(const host_info_t* host_info) {
   char local_response_buffer[BUFFER_MAX_SIZE] = {0};
 
   esp_http_client_config_t config = {
-    .host = hostname,
-    .port = 8000,
+    .host = host_info->host,
+    .port = host_info->port,
     .path = "/app/restore",
     .method = HTTP_METHOD_POST,
     .user_data = local_response_buffer,
@@ -102,69 +122,18 @@ static void restore_app(const char* hostname) {
 }
 
 
-// imgsについての操作
-static char* get_imgs(const char* hostname) {
-  esp_http_client_config_t config = {
-    .host = hostname,
-    .port = 8000,
-    .path = "/img",
-    .method = HTTP_METHOD_GET,
-  };
-  esp_http_client_handle_t client = esp_http_client_init(&config);
-  if (client == NULL) {
-    M5.Lcd.println("Failed to init.");
-    return "";
-  }
-
-  esp_err_t err = esp_http_client_open(client, 0);
-  if (err == ESP_OK) {
-    // M5.Lcd.println("Success open client.");
-  }
-  else {
-    M5.Lcd.print(esp_err_to_name(err));
-    return "";
-  }
-
-  // 受け取った返り値
-
-  // M5.Lcd.println("Success init buffer");
-  char* buffer;
-
-  int content_length =  esp_http_client_fetch_headers(client);
-  if (content_length < 0) {
-    M5.Lcd.println("Failed to fetch headers");
-    esp_http_client_close(client);
-    return "";
-  }
-
-  buffer = (char*)malloc(content_length/20);
-  if (buffer == NULL) {
-    M5.Lcd.println("Failed to malloc");
-    return "";
-  }
-
-  int read_len = esp_http_client_read(client, buffer, content_length);
-  if (read_len <= 0) {
-      M5.Lcd.println(read_len);
-  }
-  else {
-    buffer[read_len] = 0;
-  }
-
-  esp_http_client_close(client);
-  M5.Lcd.println("Success");
-  return buffer;
-}
-
-static void post_imgs(const char* hostname, char* enc) {
+static void migrate(const host_info_t* host_info, char* to_url) {
   char local_response_buffer[BUFFER_MAX_SIZE] = {0};
 
+  char* query_str = "host=";
+  strcat(query_str, to_url);
+
   esp_http_client_config_t config = {
-    .host = hostname,
-    .port = 8000,
-    .path = "/img",
+    .host = host_info->host,
+    .port = host_info->port,
+    .path = "/app/migrate",
+    .query = query_str,
     .method = HTTP_METHOD_POST,
-    .user_data = enc,
   };
   esp_http_client_handle_t client = esp_http_client_init(&config);
   if (client == NULL) {
@@ -174,8 +143,7 @@ static void post_imgs(const char* hostname, char* enc) {
 
   esp_err_t err = esp_http_client_perform(client);
   if (err == ESP_OK) {
-    M5.Lcd.println("Get imgs.");
-    M5.Lcd.println(local_response_buffer);
+    M5.Lcd.println("Success migration");
   }
   else {
     M5.Lcd.print(esp_err_to_name(err));
@@ -194,14 +162,12 @@ void setup() {
       M5.Lcd.print(".");
     }
     M5.Lcd.println(" CONNECTED");
-    // start_app(host_popos);
+    // start_app(&host_popos);
 }
 
 
 
 void loop() {
-  // M5.Lcd.fillScreen(BLACK);
-// M5.Lcd.setCursor(0, 0, 2);
 
   delay(1000);
   M5.update();
@@ -210,21 +176,17 @@ void loop() {
     M5.Lcd.setCursor(0, 0, 2);
 
     // マイグレーション
-    // stop_app(host_popos);
-    // delay(3000);
-
-    // char img[1];
-    get_imgs(host_popos);
-  //   M5.Lcd.fillScreen(BLACK);
-  //   M5.Lcd.setCursor(0, 0, 2);  
+    stop_app(&host_popos);
     delay(3000);
 
-  //   post_imgs(host_popos, img);
-  //   M5.Lcd.fillScreen(BLACK);
-  //   M5.Lcd.setCursor(0, 0, 2);
-  //   delay(3000);
+    char* to = (char*)(host_popos2.host);
+    strcat(to, ":8001");
+    migrate(&host_popos, to);
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setCursor(0, 0, 2);
+    delay(3000);
 
-  //   restore_app(host_popos);
+    restore_app(&host_popos);
   }
 
 

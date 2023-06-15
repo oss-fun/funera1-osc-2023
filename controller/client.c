@@ -15,11 +15,11 @@ typedef struct {
 #if 1
 const char* ssid = "";
 const char* password = "";
-const host_info_t host_popos = {
+host_info_t host_popos = {
   "",
   8000
 };
-const host_info_t host_popos2 = {
+host_info_t host_popos2 = {
   "",
   8001
 };
@@ -44,7 +44,7 @@ static const char *TAG = "HTTP_CLIENT";
 
 static void test_api(const char*);
 
-static void start_app(const host_info_t* host_info) {
+static void start_app(host_info_t* host_info) {
   const int MAX_SIZE = 2048;
   char local_response_buffer[BUFFER_MAX_SIZE] = {0};
 
@@ -71,7 +71,7 @@ static void start_app(const host_info_t* host_info) {
   }
 }
 
-static void stop_app(const host_info_t* host_info) {
+static void stop_app(host_info_t* host_info) {
   char local_response_buffer[BUFFER_MAX_SIZE] = {0};
 
   esp_http_client_config_t config = {
@@ -96,7 +96,7 @@ static void stop_app(const host_info_t* host_info) {
   }
 }
 
-static void restore_app(const host_info_t* host_info) {
+static void restore_app(host_info_t* host_info) {
   char local_response_buffer[BUFFER_MAX_SIZE] = {0};
 
   esp_http_client_config_t config = {
@@ -128,7 +128,7 @@ static char* add_str(char* a, char*b) {
   return c;
 }
 
-static void migrate(const host_info_t* from_host, const host_info_t* to_host) {
+static void migrate(host_info_t* from_host, host_info_t* to_host) {
   char local_response_buffer[BUFFER_MAX_SIZE] = {0};
 
   char query_str[128] = "host=";
@@ -160,6 +160,8 @@ static void migrate(const host_info_t* from_host, const host_info_t* to_host) {
   }
 }
 
+host_info_t *from, *to;
+
 void setup() {
     M5.begin(); 
     M5.Lcd.setTextSize(3);  
@@ -173,9 +175,15 @@ void setup() {
     }
     M5.Lcd.println(" CONNECTED");
     // start_app(&host_popos);
+    from = &host_popos;
+    to = &host_popos2;
 }
 
-
+void swap(host_info_t* a, host_info_t* b) {
+  host_info_t tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
 
 void loop() {
 
@@ -186,17 +194,18 @@ void loop() {
     M5.Lcd.setCursor(0, 0, 2);
 
     // マイグレーション
-    stop_app(&host_popos);
+    stop_app(from);
     M5.Lcd.fillScreen(BLACK);
     M5.Lcd.setCursor(0, 0, 2);
     delay(2000);
 
-    migrate(&host_popos, &host_popos2);
+    migrate(from, to);
     M5.Lcd.fillScreen(BLACK);
     M5.Lcd.setCursor(0, 0, 2);
     delay(2000);
 
-    restore_app(&host_popos);
+    restore_app(to);
+    swap(from, to);
   }
 }
 

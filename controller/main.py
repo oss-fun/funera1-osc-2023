@@ -88,7 +88,7 @@ def stop():
     return "Success"
 
 @app.post("/app/migrate")
-async def migrate(host: str = Form()):
+async def migrate(host):
     if not os.path.exists("imgs.zip"):
         return "imgs.zip is not found"
     # response = FileResponse(path = "./imgs.zip")
@@ -120,7 +120,3 @@ async def get_imgs(enc: str = Form()):
         zf.extractall()
 
     return "Success"
-
-    
-
-    

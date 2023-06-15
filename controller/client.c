@@ -4,6 +4,7 @@
 #include "time.h"
 #include "esp_log.h"
 #include <string.h>
+#include <stdlib.h>
 
 typedef struct {
   char* host;
@@ -22,7 +23,6 @@ const host_info_t host_popos2 = {
   "",
   8001
 };
-// const char* host_raspi = "192.168.10.108";
 #endif
 
 // 学校
@@ -121,16 +121,26 @@ static void restore_app(const host_info_t* host_info) {
   }
 }
 
+static char* add_str(char* a, char*b) {
+  char* c = (char*)malloc(strlen(a) + strlen(b));
+  strcat(c, a);
+  strcat(c, b);
+  return c;
+}
 
-static void migrate(const host_info_t* host_info, char* to_url) {
+static void migrate(const host_info_t* from_host, const host_info_t* to_host) {
   char local_response_buffer[BUFFER_MAX_SIZE] = {0};
 
-  char* query_str = "host=";
-  strcat(query_str, to_url);
+  char query_str[128] = "host=";
+  strcat(query_str, to_host->host);
+  strcat(query_str, "&port=");
+  char num[10];
+  itoa(to_host->port, num, 10);
+  strcat(query_str, num);
 
   esp_http_client_config_t config = {
-    .host = host_info->host,
-    .port = host_info->port,
+    .host = from_host->host,
+    .port = from_host->port,
     .path = "/app/migrate",
     .query = query_str,
     .method = HTTP_METHOD_POST,
@@ -177,68 +187,16 @@ void loop() {
 
     // マイグレーション
     stop_app(&host_popos);
-    delay(3000);
-
-    char* to = (char*)(host_popos2.host);
-    strcat(to, ":8001");
-    migrate(&host_popos, to);
     M5.Lcd.fillScreen(BLACK);
     M5.Lcd.setCursor(0, 0, 2);
-    delay(3000);
+    delay(2000);
+
+    migrate(&host_popos, &host_popos2);
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setCursor(0, 0, 2);
+    delay(2000);
 
     restore_app(&host_popos);
   }
-
-
 }
 
-static void test_api(const char* hostname) {
-  const int MAX_SIZE = 2048;
-  char local_response_buffer[MAX_SIZE] = {0};
-
-  esp_http_client_config_t config = {
-    .host = hostname,
-    .port = 8000,
-    .path = "/",
-    .method = HTTP_METHOD_GET,
-    // .user_data = local_response_buffer,
-  };
-  esp_http_client_handle_t client = esp_http_client_init(&config);
-  if (client == NULL) {
-    M5.Lcd.println("Failed to init.");
-    return;
-  }
-
-  // 画面をclear
-  M5.Lcd.fillScreen(BLACK);
-  M5.Lcd.setCursor(0, 0, 2);
-
-  // esp_err_t err = esp_http_client_perform(client);
-  esp_err_t err = esp_http_client_open(client, 0);
-  if (err == ESP_OK) {
-    M5.Lcd.println("Success");
-  }
-  else {
-    M5.Lcd.print(esp_err_to_name(err));
-    return;
-  }
-
-  // 受け取った返り値をprint
-  char buffer[512];
-  int content_length =  esp_http_client_fetch_headers(client);
-  M5.Lcd.println(content_length);
-  int total_read_len = 0, read_len;
-  if (total_read_len < content_length && content_length <= 512) {
-      read_len = esp_http_client_read(client, buffer, content_length);
-      if (read_len <= 0) {
-          ESP_LOGE(TAG, "Error read data");
-      }
-      buffer[read_len] = 0;
-      M5.Lcd.println(buffer);
-  }
-  else {
-    M5.Lcd.println("Can't println content.");
-  }
-
-  esp_http_client_close(client);
-}

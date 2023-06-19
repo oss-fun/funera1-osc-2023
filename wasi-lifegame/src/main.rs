@@ -1,4 +1,5 @@
 use rand::Rng;
+// use std::io::{stdout, Write, BufWriter};
 
 fn main() {
     const N: usize = 100;
@@ -14,11 +15,13 @@ fn main() {
 
     let mut turn = 0;
     let mut k = 0;
+    print!("\x1b[2J");
     while turn < 101 {
         k += 1;
         println!("k: {}\n", k);
 
         // Display map
+        print!("\x1b[{}A", N+2);
         for i in 1..=N as i32 {
             for j in 1..=N as i32 {
                 print!("{}", if map[turn][i as usize][j as usize] {'#'} else {'.'});

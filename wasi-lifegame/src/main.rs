@@ -1,7 +1,8 @@
 use rand::Rng;
+use std::io::{stdout, Write, BufWriter};
 
 fn main() {
-    const N: usize = 100;
+    const N: usize = 64;
     let mut map: [[[bool; N+2 as usize]; N+2]; 2] = [[[false; N+2 as usize]; N+2 as usize]; 2];
 
     let mut rng = rand::thread_rng();
@@ -14,16 +15,19 @@ fn main() {
 
     let mut turn = 0;
     let mut k = 0;
-    while turn < 101 {
+
+    let out = stdout();
+    let mut out = BufWriter::new(out.lock());
+    loop {
         k += 1;
-        println!("k: {}\n", k);
+        writeln!(out, "k: {}\n", k).unwrap();
 
         // Display map
         for i in 1..=N as i32 {
             for j in 1..=N as i32 {
-                print!("{}", if map[turn][i as usize][j as usize] {'#'} else {'.'});
+                write!(out, "{}", if map[turn][i as usize][j as usize] {'#'} else {'.'}).unwrap();
             }
-            println!("")
+            writeln!(out, "").unwrap();
         }
 
         // next state
@@ -57,14 +61,6 @@ fn main() {
                         num += map[turn][ni as usize][nj as usize] as i32;
                     }
                 }
-                // let tmp = map[turn][if i+1 > N  {1} else {i+1}][j]
-                //       + map[turn][if i-1 > 0 {i-1} else {N}][j]
-                //       + map[turn][i][if j + 1 > N {1} else {j + 1}]
-                //       + map[turn][i][if j - 1 > 0 {j-1} else {N}]
-                //       + map[turn][if i+1 > N {1} else {i+1}][if j+1 > N {1} else {j+1}]
-                //       + map[turn][i + 1 > N ? 1 : i + 1][j - 1 ?: N]
-                //       + map[turn][i - 1 ?: N][j + 1 > N ? 1 : j + 1]
-                //       + map[turn][i - 1 ?: N][j - 1 ?: N];
 
                 if map[turn][i as usize][j as usize] {
                     map[turn ^ 1][i as usize][j as usize] = num == 2 || num == 3;

@@ -17,10 +17,10 @@ fn main() {
     let mut k = 0;
 
     print!("\x1b[2J");
-    let out = stdout();
-    let mut out = BufWriter::new(out.lock());
-
     loop {
+        let out = stdout();
+        let mut out = BufWriter::new(out.lock());
+
         k += 1;
         writeln!(out, "k: {}\n", k).unwrap();
 

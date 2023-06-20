@@ -16,13 +16,16 @@ fn main() {
     let mut turn = 0;
     let mut k = 0;
 
+    print!("\x1b[2J");
     let out = stdout();
     let mut out = BufWriter::new(out.lock());
+
     loop {
         k += 1;
         writeln!(out, "k: {}\n", k).unwrap();
 
         // Display map
+        print!("\x1b[{}A", N+2);
         for i in 1..=N as i32 {
             for j in 1..=N as i32 {
                 write!(out, "{}", if map[turn][i as usize][j as usize] {'#'} else {'.'}).unwrap();

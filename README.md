@@ -1,5 +1,4 @@
-# funera1-osc-2023
-
+# MAGIC: Magical webAssembly miGration stICk
 
 ## Directory
 ```bash

@@ -1,2 +1,2 @@
-cd wasi-lifegame
+cd src/wasi-lifegame
 cargo wasi build

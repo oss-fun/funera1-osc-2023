@@ -31,7 +31,7 @@ async def run():
         return "Proccess is already running."
 
     wasm_executor = "../../cmake_build/basic"
-    wasm_app = "../../wasi-lifegame/target/wasm32-wasi/debug/wasi-lifegame.wasm"
+    wasm_app = "../../src/wasi-lifegame/target/wasm32-wasi/debug/wasi-lifegame.wasm"
 
     args = ["-f", wasm_app]
     proc = await asyncio.create_subprocess_exec(

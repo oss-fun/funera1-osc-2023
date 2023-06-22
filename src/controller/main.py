@@ -30,8 +30,8 @@ async def run():
     if running_proc != None:
         return "Proccess is already running."
 
-    wasm_executor = "../cmake_build/basic"
-    wasm_app = "../wasi-lifegame/target/wasm32-wasi/debug/wasi-lifegame.wasm"
+    wasm_executor = "../../cmake_build/basic"
+    wasm_app = "../../wasi-lifegame/target/wasm32-wasi/debug/wasi-lifegame.wasm"
 
     args = ["-f", wasm_app]
     proc = await asyncio.create_subprocess_exec(
@@ -50,7 +50,7 @@ async def restore():
     if running_proc != None:
         return "Proccess is already running."
 
-    wasm_executor = "../cmake_build/basic"
+    wasm_executor = "../../cmake_build/basic"
 
     #NOTE: imgファイルについての操作をする必要があるかも
     args = ["-r", "0"]

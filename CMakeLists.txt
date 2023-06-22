@@ -79,10 +79,10 @@ include (${WAMR_ROOT_DIR}/build-scripts/runtime_lib.cmake)
 add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
 
 ################  application related  ################
-include_directories(${CMAKE_CURRENT_LIST_DIR}/src)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/src/executor)
 include (${SHARED_DIR}/utils/uncommon/shared_uncommon.cmake)
 
-add_executable (basic src/main.c src/native_impl.c ${UNCOMMON_SHARED_SOURCE})
+add_executable (basic src/executor/main.c src/executor/native_impl.c ${UNCOMMON_SHARED_SOURCE})
 
 if (APPLE)
   target_link_libraries (basic vmlib -lm -ldl -lpthread)

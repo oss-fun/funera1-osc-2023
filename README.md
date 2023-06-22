@@ -1,10 +1,11 @@
-# funera1-osc-2023
-
+# MAGIC: Magical webAssembly miGration stICk
 
 ## Directory
 ```bash
-├── src # Wasm application executor
-├── wasi-lifegame # Wasm application
+├── src 
+│   ├── wasi-lifegame # Wasm application
+│   ├── executor      # Wasm application executor
+│   └──controller     # Http client and server
 ├── wasm-micro-runtime
 └── scripts
 ```
